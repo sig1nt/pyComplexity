@@ -3,7 +3,6 @@ import config
 
 complexity = "/usr/local/bin/complexity"
 
-            
 def getRatio(scores):
     sorted_s = sorted(scores)
     quart_size = len(sorted_s)/4.0
@@ -31,8 +30,12 @@ def buildFile(user, asgn):
         zip_filename = os.path.join(os.getcwd(), zip_filename[0])
 
     # extract the project
-    with zipfile.ZipFile(zip_filename, 'r') as handle:
-        handle.extractall(os.getcwd())
+    try:
+        with zipfile.ZipFile(zip_filename, 'r') as handle:
+            handle.extractall(os.getcwd())
+    except:
+        print "Extraction Failed"
+        return
 
     # run complexity on the files
     args = [complexity, "-t0", "-s1"] + glob.glob("*.c")
@@ -67,7 +70,7 @@ def buildFile(user, asgn):
     
     template.append(overall_score/len(user_data))
 
-    with open("scoreReport.txt", "w") as f:
+    with open("score.txt", "w") as f:
         f.write(config.template(tuple(template)))
 
 if __name__ == '__main__':
