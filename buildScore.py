@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import zipfile, os, re, subprocess, glob, math
 import config
 
@@ -15,16 +17,16 @@ def getRatio(scores):
 
     return quart/sum(scores)
 
-def buildFile(user, asgn):
+def buildFile(user, bracket, asgn):
 
     # Filter out non-zip files
-    zip_filename = filter(lambda z: re.search("^\w+\.zip", z),
-                          os.listdir(os.getcwd()))
+    zip_filename = list(filter(lambda z: re.search("^\w+\.zip", z),
+                               os.listdir(os.getcwd())))
 
     if(len(zip_filename) != 1):
-        print "Skipping {} on {}: Found {} zip files" % (user,
-                                                         asgn,
-                                                         len(zip_filename))
+        print("Skipping {} in {}: Found {} zip files".format(user,
+                                                             bracket,
+                                                             len(zip_filename)))
         return
     else:
         zip_filename = os.path.join(os.getcwd(), zip_filename[0])
@@ -34,21 +36,24 @@ def buildFile(user, asgn):
         with zipfile.ZipFile(zip_filename, 'r') as handle:
             handle.extractall(os.getcwd())
     except:
-        print "Extraction Failed"
+        print("Skipping {} in {}: Extraction Failed".format(user, bracket))
         return
 
     # run complexity on the files
     args = [complexity, "-t0", "-s1"] + glob.glob("*.c")
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+    proc = subprocess.Popen(args,
+                            stdout = subprocess.PIPE,
+                            stderr = subprocess.PIPE)
     proc.wait()
     out, err = proc.communicate()
 
-    if err != None:
-        print "Complexity checker failed"
+    if err.decode('utf-8') != '':
+        print("Skipping {} in {}: Complexity Failed".format(user, bracket))
+        print(err)
         return
 
     # Break out scores and get calculations
-    lines = out.split("\n")[2:-2] # Cut off the begining and end non-scores
+    lines = out.decode('utf-8').split("\n")[2:-2] # Cut off the begining and end non-scores
     scores = [int(x.split()[0]) for x in lines]
 
     s_sum = sum(scores)
@@ -68,10 +73,10 @@ def buildFile(user, asgn):
         template.append(min(ref_data[i]/float(user_data[i]), 1) * 100)
         overall_score += template[-1]
     
-    template.append(overall_score/len(user_data))
+    final_score = overall_score/len(user_data) * (float(bracket)/100)
+    template.append(final_score)
 
     with open("score.txt", "w") as f:
         f.write(config.template(tuple(template)))
 
-if __name__ == '__main__':
-    buildFile('ngonella', 'Project 2')
+    return final_score
