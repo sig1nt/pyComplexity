@@ -1,6 +1,6 @@
-REF_SUM = 250
-REF_AVG = 17
-REF_MAX = 50
+REF_SUM = 350
+REF_AVG = 27
+REF_MAX = 60
 REF_RAT = 0.6
 
 def template(args):
