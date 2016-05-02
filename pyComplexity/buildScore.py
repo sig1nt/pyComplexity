@@ -1,7 +1,6 @@
 from __future__ import print_function
-
+from . import config
 import zipfile, os, re, subprocess, glob, math
-import config
 
 complexity = "/usr/local/bin/complexity"
 
@@ -72,7 +71,7 @@ def buildFile(user, bracket, asgn):
         template.append(ref_data[i])
         template.append(min(ref_data[i]/float(user_data[i]), 1) * 100)
         overall_score += template[-1]
-    
+
     final_score = overall_score/len(user_data) * (float(bracket)/100)
     template.append(final_score)
 
